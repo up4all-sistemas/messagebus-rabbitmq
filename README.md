@@ -1,2 +1,2 @@
 # messagebus-rabbitmq
-Implementation of Up4AllMessageBus.Abstractions for RabbitMQ
+Implementação para RabbitMQ do framework Up4All.MessageBus
