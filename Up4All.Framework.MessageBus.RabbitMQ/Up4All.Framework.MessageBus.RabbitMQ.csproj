@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="RabbitMQ.Client" Version="6.2.1" />
-    <PackageReference Include="Up4All.Framework.MessageBus.Abstractions" Version="1.0.10" />
+    <PackageReference Include="Up4All.Framework.MessageBus.Abstractions" Version="1.0.11" />
   </ItemGroup>
 
   <ItemGroup>
