@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using Up4All.Framework.MessageBus.Abstractions;
+using Up4All.Framework.MessageBus.Abstractions.Interfaces;
 using Up4All.Framework.MessageBus.Abstractions.Messages;
 using Up4All.Framework.MessageBus.Abstractions.Mocks;
 
 namespace Up4All.Framework.MessageBus.RabbitMQ
 {
-    public class RabbitMQTopicClientMocked : MessageBusTopicClientMock, IRabbitMQClient
+    public class RabbitMQTopicClientMocked : MessageBusTopicClientMock, IMessageBusPublisher, IRabbitMQClient
     {
         public RabbitMQTopicClientMocked() : base()
         {

@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using Xunit;
+using Up4All.Framework.MessageBus.Abstractions.Interfaces;
 
 namespace Up4All.Framework.MessageBus.RabbitMQ.Tests
 {
@@ -36,7 +37,7 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Tests
         [Fact]
         public async void QueueSendMessage()
         {
-            var client = _provider.GetRequiredService<MessageBusQueueClient>();
+            var client = _provider.GetRequiredService<IMessageBusQueueClient>();
 
             var msg = new MessageBusMessage()
             {                
@@ -52,7 +53,7 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Tests
         [Fact]
         public void QueueReceiveMessage()
         {
-            var client = _provider.GetRequiredService<MessageBusQueueClient>();
+            var client = _provider.GetRequiredService<IMessageBusQueueClient>();
 
             client.RegisterHandler((msg) =>
             {
@@ -67,7 +68,7 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Tests
         [Fact]
         public async void TopicSendMessage()
         {
-            var client = _provider.GetRequiredService<MessageBusTopicClient>();
+            var client = _provider.GetRequiredService<IMessageBusPublisher>();
 
             var msg = new MessageBusMessage();
             msg.AddBody(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new { teste = "teste", numero = 10 }));
@@ -81,7 +82,7 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Tests
         [Fact]
         public void SubscriveReceiveMessage()
         {
-            var client = _provider.GetRequiredService<MessageBusSubscribeClient>();
+            var client = _provider.GetRequiredService<IMessageBusConsumer>();
 
             client.RegisterHandler((msg) =>
             {

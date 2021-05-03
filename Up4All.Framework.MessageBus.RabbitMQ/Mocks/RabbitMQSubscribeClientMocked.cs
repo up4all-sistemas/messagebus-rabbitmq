@@ -3,12 +3,13 @@ using System;
 using System.Threading.Tasks;
 
 using Up4All.Framework.MessageBus.Abstractions.Enums;
+using Up4All.Framework.MessageBus.Abstractions.Interfaces;
 using Up4All.Framework.MessageBus.Abstractions.Messages;
 using Up4All.Framework.MessageBus.Abstractions.Mocks;
 
 namespace Up4All.Framework.MessageBus.RabbitMQ
 {
-    public class RabbitMQSubscribeClientMocked : MessageBusSubscribeClientMock, IRabbitMQClient, IDisposable
+    public class RabbitMQSubscribeClientMocked : MessageBusSubscribeClientMock, IMessageBusConsumer, IRabbitMQClient, IDisposable
     {
         public RabbitMQSubscribeClientMocked() : base()
         {
