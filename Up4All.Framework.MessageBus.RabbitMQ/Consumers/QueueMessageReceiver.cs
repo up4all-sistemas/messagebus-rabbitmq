@@ -27,8 +27,9 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Consumers
                 var message = new ReceivedMessage();
                 message.AddBody(body.ToArray());
 
-                foreach (var prop in properties.Headers)
-                    message.UserProperties.Add(prop.Key, prop.Value);
+                if(properties.Headers != null)
+                    foreach (var prop in properties.Headers)
+                        message.UserProperties.Add(prop.Key, prop.Value);
 
                 var response = _handler(message);
 

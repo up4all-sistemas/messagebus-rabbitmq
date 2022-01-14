@@ -3,8 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 using Up4All.Framework.MessageBus.Abstractions.Configurations;
 using Up4All.Framework.MessageBus.Abstractions.Factories;
@@ -53,6 +55,22 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Tests
             await client.Send(msg);
 
             Assert.True(true);
+        }
+
+        [Fact]
+        public void QueueReceiveMessage()
+        {
+            var factory = _provider.GetRequiredService<MessageBusFactory>();
+            var client = factory.GetQueueClient("queue1");
+
+            client.RegisterHandler((msg) =>
+            {
+                Assert.True(msg != null);
+                return Abstractions.Enums.MessageReceivedStatusEnum.Completed;
+            }, (ex) => Debug.Print(ex.Message));
+
+
+            Thread.Sleep(5000);
         }
     }
 }
