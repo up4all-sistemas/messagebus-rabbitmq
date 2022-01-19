@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>Up4All Sistemas</Authors>
     <Description>Implementation of Up4All MessageBus for RabbitMQ</Description>
     <PackageTags>rabbitmq amqp bus client messagebus</PackageTags>
@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="RabbitMQ.Client" Version="6.2.2" />
-    <PackageReference Include="Up4All.Framework.MessageBus.Abstractions" Version="1.0.16" />
+    <PackageReference Include="Up4All.Framework.MessageBus.Abstractions" Version="1.0.17" />
   </ItemGroup>
 
   <ItemGroup>

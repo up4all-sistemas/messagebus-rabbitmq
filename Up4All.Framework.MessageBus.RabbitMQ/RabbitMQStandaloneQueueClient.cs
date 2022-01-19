@@ -39,8 +39,10 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
         {
             using (var conn = this.GetConnection())
             {
-                using var channel = this.CreateChannel(conn);
-                Send(message, channel);
+                using (var channel = this.CreateChannel(conn))
+                {
+                    Send(message, channel);
+                }                
             }
 
             return Task.CompletedTask;
@@ -50,9 +52,11 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
         {
             using (var conn = this.GetConnection())
             {
-                using var channel = this.CreateChannel(conn);
-                foreach (var message in messages)
-                    Send(message, channel);
+                using (var channel = this.CreateChannel(conn))
+                {
+                    foreach (var message in messages)
+                        Send(message, channel);
+                }
             }
 
             return Task.CompletedTask;
