@@ -18,7 +18,6 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
 {
     public class RabbitMQStandaloneQueueClient : StandaloneRabbitMQClient, IMessageBusStandaloneQueueClient, IDisposable
     {
-        private IConnection _conn;
         private IModel _channel;
         private readonly string _queuename;
 
@@ -40,7 +39,7 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
         {
             using (var conn = GetConnection())
             {
-                using (var channel = this.CreateChannel(conn))
+                using (var channel = CreateChannel(conn))
                 {
                     Send(message, channel);
                 }
@@ -53,7 +52,7 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
         {
             using (var conn = GetConnection())
             {
-                using (var channel = this.CreateChannel(conn))
+                using (var channel = CreateChannel(conn))
                 {
                     foreach (var message in messages)
                         Send(message, channel);
@@ -73,16 +72,16 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
             channel.BasicPublish(exchange: "", routingKey: _queuename, basicProperties: basicProps, body: msg.Body);
         }
 
-        public void Dispose()
+        public new void Dispose()
         {
             _channel?.Close();
-            _conn?.Close();
+            base.Close();
         }
 
-        public Task Close()
+        public new Task Close()
         {
             _channel?.Close();
-            _conn?.Close();
+            base.Close();
 
             return Task.CompletedTask;
         }

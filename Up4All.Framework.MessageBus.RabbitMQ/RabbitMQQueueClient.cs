@@ -19,19 +19,16 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
 {
     public class RabbitMQQueueClient : RabbitMQClient, IMessageBusQueueClient, IDisposable
     {
-        private readonly ILogger<RabbitMQQueueClient> _logger;
-        private IConnection _conn;
+                
         private IModel _channel;
 
         public RabbitMQQueueClient(IOptions<MessageBusOptions> messageOptions, ILogger<RabbitMQQueueClient> logger) : base(logger, messageOptions)
-        {
-            _logger = logger;
+        {        
         }
 
         public void RegisterHandler(Func<ReceivedMessage, MessageReceivedStatusEnum> handler, Action<Exception> errorHandler, Action onIdle = null, bool autoComplete = false)
         {
-            _conn = GetConnection();
-            _channel = this.CreateChannel(_conn);
+            _channel = this.CreateChannel(GetConnection());
             _channel.BasicQos(0, 1, false);
             var receiver = new QueueMessageReceiver(_channel, handler, errorHandler);
             _channel.BasicConsume(queue: MessageBusOptions.QueueName, autoAck: false, consumer: receiver);
@@ -74,16 +71,16 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
             channel.BasicPublish(exchange: "", routingKey: MessageBusOptions.QueueName, basicProperties: basicProps, body: msg.Body);
         }
 
-        public void Dispose()
+        public new void Dispose()
         {
             _channel?.Close();
-            _conn?.Close();
+            base.Close();
         }
 
-        public Task Close()
+        public new Task Close()
         {
             _channel?.Close();
-            _conn?.Close();
+            base.Close();
 
             return Task.CompletedTask;
         }

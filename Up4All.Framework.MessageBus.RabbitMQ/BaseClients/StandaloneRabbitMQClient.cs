@@ -6,13 +6,15 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 
 using System;
+using System.Threading.Tasks;
 
 using Up4All.Framework.MessageBus.Abstractions;
 
 namespace Up4All.Framework.MessageBus.RabbitMQ.BaseClients
 {
-    public abstract class StandaloneRabbitMQClient : MessageBusStandaloneClientBase
+    public abstract class StandaloneRabbitMQClient : MessageBusStandaloneClientBase, IDisposable
     {
+        private IConnection _conn;
         private readonly ILogger<StandaloneRabbitMQClient> _logger;
         private readonly string _connectionString;
         private readonly int _connectionAttempts;
@@ -27,6 +29,8 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.BaseClients
 
         public IConnection GetConnection()
         {
+            if (_conn != null) return _conn;
+
             var result = Policy
                 .Handle<BrokerUnreachableException>()
                 .WaitAndRetry(_connectionAttempts, retryAttempt =>
@@ -38,18 +42,30 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.BaseClients
                 .ExecuteAndCapture(() =>
                 {
                     _logger.LogDebug($"Trying to connect in RabbitMQ server");
-                    return new ConnectionFactory() { Uri = new Uri(_connectionString) }.CreateConnection();
+                    _conn = new ConnectionFactory() { Uri = new Uri(_connectionString) }.CreateConnection();
                 });
 
-            if (result.Outcome == OutcomeType.Successful)
-                return result.Result;
+            if (result.Outcome != OutcomeType.Successful)
+                throw result.FinalException;
 
-            throw result.FinalException;
+            return _conn;
         }
 
         public IModel CreateChannel(IConnection conn)
         {
             return conn.CreateModel();
+        }
+
+        public void Dispose()
+        {
+            _conn?.Close();
+        }
+
+        public Task Close()
+        {
+            _conn?.Close();
+
+            return Task.CompletedTask;
         }
     }
 }

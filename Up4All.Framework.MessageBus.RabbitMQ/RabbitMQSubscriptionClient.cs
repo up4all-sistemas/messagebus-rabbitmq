@@ -17,7 +17,6 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
 {
     public class RabbitMQSubscriptionClient : RabbitMQClient, IMessageBusConsumer, IDisposable
     {
-        private IConnection _conn;
         private IModel _channel;
 
         public RabbitMQSubscriptionClient(ILogger<RabbitMQSubscriptionClient> logger, IOptions<MessageBusOptions> messageOptions) : base(logger, messageOptions)
@@ -26,23 +25,22 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
 
         public void RegisterHandler(Func<ReceivedMessage, MessageReceivedStatusEnum> handler, Action<Exception> errorHandler, Action onIdle = null, bool autoComplete = false)
         {
-            _conn = GetConnection();
-            _channel = CreateChannel(_conn);
+            _channel = CreateChannel(GetConnection());
             _channel.BasicQos(0, 1, false);
             var receiver = new QueueMessageReceiver(_channel, handler, errorHandler);
             _channel.BasicConsume(queue: MessageBusOptions.SubscriptionName, autoAck: false, consumer: receiver);
         }
 
-        public void Dispose()
+        public new void Dispose()
         {
             _channel?.Close();
-            _conn?.Close();
+            base.Close();
         }
 
-        public Task Close()
+        public new Task Close()
         {
             _channel?.Close();
-            _conn?.Close();
+            base.Close();
 
             return Task.CompletedTask;
         }
