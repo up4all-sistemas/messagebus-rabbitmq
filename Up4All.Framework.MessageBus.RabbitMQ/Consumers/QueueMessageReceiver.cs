@@ -27,7 +27,7 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Consumers
                 var message = new ReceivedMessage();
                 message.AddBody(body.ToArray());
 
-                if(properties.Headers != null)
+                if (properties.Headers != null)
                     foreach (var prop in properties.Headers)
                         message.UserProperties.Add(prop.Key, prop.Value);
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 using RabbitMQ.Client;
 
@@ -6,21 +7,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Up4All.Framework.MessageBus.Abstractions;
+using Up4All.Framework.MessageBus.Abstractions.Interfaces;
 using Up4All.Framework.MessageBus.Abstractions.Messages;
 using Up4All.Framework.MessageBus.Abstractions.Options;
+using Up4All.Framework.MessageBus.RabbitMQ.BaseClients;
 
 namespace Up4All.Framework.MessageBus.RabbitMQ
 {
-    public class RabbitMQTopicClient : MessageBusTopicClient, IRabbitMQClient
+    public class RabbitMQTopicClient : RabbitMQClient, IMessageBusPublisher
     {
-        public RabbitMQTopicClient(IOptions<MessageBusOptions> messageOptions) : base(messageOptions)
+        public RabbitMQTopicClient(ILogger<RabbitMQTopicClient> logger, IOptions<MessageBusOptions> messageOptions) : base(logger, messageOptions)
         {
         }
 
-        public override Task Send(MessageBusMessage message)
+        public Task Send(MessageBusMessage message)
         {
-            using (var conn = this.GetConnection(MessageBusOptions))
+            using (var conn = GetConnection())
             {
                 using (var channel = this.CreateChannel(conn))
                 {
@@ -31,11 +33,11 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
             return Task.CompletedTask;
         }
 
-        public override Task Send(IEnumerable<MessageBusMessage> messages)
+        public Task Send(IEnumerable<MessageBusMessage> messages)
         {
-            using (var conn = this.GetConnection(MessageBusOptions))
+            using (var conn = GetConnection())
             {
-                using (var channel = this.CreateChannel(conn))
+                using (var channel = CreateChannel(conn))
                 {
                     foreach (var message in messages)
                         Send(message, channel);

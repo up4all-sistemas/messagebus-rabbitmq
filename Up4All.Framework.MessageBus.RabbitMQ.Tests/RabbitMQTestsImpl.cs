@@ -1,15 +1,16 @@
-using Up4All.Framework.MessageBus.Abstractions;
-using Up4All.Framework.MessageBus.Abstractions.Configurations;
-using Up4All.Framework.MessageBus.Abstractions.Messages;
-using Up4All.Framework.MessageBus.Abstractions.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using Xunit;
+
 using Up4All.Framework.MessageBus.Abstractions.Interfaces;
+using Up4All.Framework.MessageBus.Abstractions.Messages;
+using Up4All.Framework.MessageBus.RabbitMQ.Configurations;
+
+using Xunit;
 
 namespace Up4All.Framework.MessageBus.RabbitMQ.Tests
 {
@@ -27,9 +28,11 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Tests
 
             var services = new ServiceCollection();
 
-            services.AddMessageBusQueueClient<RabbitMQQueueClient>(_configuration);
-            services.AddMessageBusTopicClient<RabbitMQTopicClient>(_configuration);
-            services.AddMessageBusSubscribeClient<RabbitMQSubscribeClient>(_configuration);
+            services.AddLogging();
+
+            services.AddMessageBusQueueClient(_configuration);
+            services.AddMessageBusTopicClient(_configuration);
+            services.AddMessageBusSubscriptionClient(_configuration);
 
             _provider = services.BuildServiceProvider();
         }
@@ -73,6 +76,7 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Tests
             var msg = new MessageBusMessage();
             msg.AddBody(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new { teste = "teste", numero = 10 }));
             msg.UserProperties.Add("proptst", "tst");
+            msg.UserProperties.Add("routing-key", "test-subs");
 
             await client.Send(msg);
 
