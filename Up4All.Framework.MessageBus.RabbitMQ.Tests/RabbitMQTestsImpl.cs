@@ -64,8 +64,7 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Tests
                 return Abstractions.Enums.MessageReceivedStatusEnum.Completed;
             }, (ex) => Debug.Print(ex.Message));
 
-
-            Thread.Sleep(5000);
+            Thread.Sleep(3000);
         }
 
         [Fact]
@@ -94,7 +93,7 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Tests
                 return Abstractions.Enums.MessageReceivedStatusEnum.Completed;
             }, (ex) => Debug.Print(ex.Message));
 
-            Thread.Sleep(5000);
+            Thread.Sleep(3000);
         }
     }
 }

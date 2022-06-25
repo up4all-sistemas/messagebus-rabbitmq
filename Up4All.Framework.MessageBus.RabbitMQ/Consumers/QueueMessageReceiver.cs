@@ -1,6 +1,7 @@
 ﻿using RabbitMQ.Client;
 
 using System;
+using System.Threading.Tasks;
 
 using Up4All.Framework.MessageBus.Abstractions.Enums;
 using Up4All.Framework.MessageBus.Abstractions.Messages;
@@ -10,10 +11,22 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Consumers
     public class QueueMessageReceiver : DefaultBasicConsumer
     {
         private readonly IModel _channel;
-        private readonly Func<ReceivedMessage, MessageReceivedStatusEnum> _handler;
-        private readonly Action<Exception> _errorHandler;
+        private readonly Func<ReceivedMessage, Task<MessageReceivedStatusEnum>> _handler;
+        private readonly Func<Exception,Task> _errorHandler;
 
         public QueueMessageReceiver(IModel channel, Func<ReceivedMessage, MessageReceivedStatusEnum> handler, Action<Exception> errorHandler)
+        {
+            _channel = channel;
+            _handler = (msg) => {
+                return Task.FromResult(handler(msg));
+            };
+            _errorHandler = (ex) => {
+                errorHandler(ex);
+                return Task.CompletedTask;
+            };
+        }
+
+        public QueueMessageReceiver(IModel channel, Func<ReceivedMessage, Task<MessageReceivedStatusEnum>> handler, Func<Exception,Task> errorHandler)
         {
             _channel = channel;
             _handler = handler;
@@ -29,9 +42,9 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Consumers
 
                 if (properties.Headers != null)
                     foreach (var prop in properties.Headers)
-                        message.UserProperties.Add(prop.Key, prop.Value);
+                        message.AddUserProperty(prop.Key, prop.Value);
 
-                var response = _handler(message);
+                var response = _handler(message).GetAwaiter().GetResult();
 
                 if (response == MessageReceivedStatusEnum.Deadletter)
                     _channel.BasicReject(deliveryTag, false);
@@ -41,7 +54,7 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Consumers
             catch (Exception ex)
             {
                 _channel.BasicNack(deliveryTag, false, false);
-                _errorHandler(ex);
+                _errorHandler(ex).Wait();
             }
         }
     }

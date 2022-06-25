@@ -43,5 +43,10 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Mocks
         {
             return Task.CompletedTask;
         }
+
+        public override Task RegisterHandlerAsync(Func<ReceivedMessage, Task<MessageReceivedStatusEnum>> handler, Func<Exception, Task> errorHandler, Func<Task> onIdle = null, bool autoComplete = false)
+        {
+            return Task.CompletedTask;
+        }
     }
 }

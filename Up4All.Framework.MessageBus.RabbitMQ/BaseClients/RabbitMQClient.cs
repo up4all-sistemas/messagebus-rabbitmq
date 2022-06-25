@@ -42,7 +42,7 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.BaseClients
                     _conn = new ConnectionFactory() { Uri = new Uri(MessageBusOptions.ConnectionString) }.CreateConnection();                    
                 });
 
-            if (result.Outcome == OutcomeType.Successful)
+            if (result.Outcome != OutcomeType.Successful)
                 throw result.FinalException;
 
             return _conn;

@@ -10,6 +10,7 @@ using Up4All.Framework.MessageBus.Abstractions.Interfaces;
 using Up4All.Framework.MessageBus.Abstractions.Messages;
 using Up4All.Framework.MessageBus.RabbitMQ.BaseClients;
 using Up4All.Framework.MessageBus.RabbitMQ.Consumers;
+using Up4All.Framework.MessageBus.RabbitMQ.Extensions;
 
 namespace Up4All.Framework.MessageBus.RabbitMQ
 {
@@ -27,26 +28,33 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
         }
 
         public void RegisterHandler(Func<ReceivedMessage, MessageReceivedStatusEnum> handler, Action<Exception> errorHandler, Action onIdle = null, bool autoComplete = false)
-        {
-            _conn = GetConnection();
-            _channel = CreateChannel(_conn);
-            _channel.BasicQos(0, 1, false);
+        {   
             var receiver = new QueueMessageReceiver(_channel, handler, errorHandler);
-            _channel.BasicConsume(queue: _subscriptionName, autoAck: false, consumer: receiver);
+            _channel = this.ConfigureHandler(_subscriptionName, receiver);
         }
 
-        public void Dispose()
+        public Task RegisterHandlerAsync(Func<ReceivedMessage, Task<MessageReceivedStatusEnum>> handler, Func<Exception, Task> errorHandler, Func<Task> onIdle = null, bool autoComplete = false)
         {
-            _channel?.Close();
-            _conn?.Close();
-        }
-
-        public Task Close()
-        {
-            _channel?.Close();
-            _conn?.Close();
-
+            var receiver = new QueueMessageReceiver(_channel, handler, errorHandler);
+            _channel = this.ConfigureHandler(_subscriptionName, receiver);
             return Task.CompletedTask;
         }
+
+        public new void Dispose()
+        {   
+            _channel?.Close();
+            _conn?.Close();
+            base.Dispose();
+        }
+
+        public new Task Close()
+        {
+            _channel?.Close();
+            _conn?.Close();
+            base.Dispose();
+            return Task.CompletedTask;
+        }
+
+        
     }
 }

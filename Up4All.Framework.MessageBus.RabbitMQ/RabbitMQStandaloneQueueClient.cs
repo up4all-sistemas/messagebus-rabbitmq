@@ -13,6 +13,7 @@ using Up4All.Framework.MessageBus.Abstractions.Interfaces;
 using Up4All.Framework.MessageBus.Abstractions.Messages;
 using Up4All.Framework.MessageBus.RabbitMQ.BaseClients;
 using Up4All.Framework.MessageBus.RabbitMQ.Consumers;
+using Up4All.Framework.MessageBus.RabbitMQ.Extensions;
 
 namespace Up4All.Framework.MessageBus.RabbitMQ
 {
@@ -29,10 +30,15 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
 
         public void RegisterHandler(Func<ReceivedMessage, MessageReceivedStatusEnum> handler, Action<Exception> errorHandler, Action onIdle = null, bool autoComplete = false)
         {
-            _channel = CreateChannel(GetConnection());
-            _channel.BasicQos(0, 1, false);
             var receiver = new QueueMessageReceiver(_channel, handler, errorHandler);
-            _channel.BasicConsume(queue: _queuename, autoAck: false, consumer: receiver);
+            _channel = this.ConfigureHandler(_queuename, receiver);
+        }
+
+        public Task RegisterHandlerAsync(Func<ReceivedMessage, Task<MessageReceivedStatusEnum>> handler, Func<Exception, Task> errorHandler, Func<Task> onIdle = null, bool autoComplete = false)
+        {
+            var receiver = new QueueMessageReceiver(_channel, handler, errorHandler);
+            _channel = this.ConfigureHandler(_queuename, receiver);
+            return Task.CompletedTask;
         }
 
         public Task Send(MessageBusMessage message)
@@ -85,5 +91,7 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
 
             return Task.CompletedTask;
         }
+
+        
     }
 }
