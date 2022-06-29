@@ -20,23 +20,23 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
 {
     public class RabbitMQQueueClient : RabbitMQClient, IMessageBusQueueClient, IDisposable
     {
-                
+
         private IModel _channel;
 
         public RabbitMQQueueClient(IOptions<MessageBusOptions> messageOptions, ILogger<RabbitMQQueueClient> logger) : base(logger, messageOptions)
-        {        
+        {
         }
 
         public void RegisterHandler(Func<ReceivedMessage, MessageReceivedStatusEnum> handler, Action<Exception> errorHandler, Action onIdle = null, bool autoComplete = false)
         {
-            _channel = CreateChannel(this.GetConnection());
+            _channel = CreateChannel(GetConnection());
             var receiver = new QueueMessageReceiver(_channel, handler, errorHandler);
             this.ConfigureHandler(_channel, MessageBusOptions, receiver);
         }
 
         public Task RegisterHandlerAsync(Func<ReceivedMessage, Task<MessageReceivedStatusEnum>> handler, Func<Exception, Task> errorHandler, Func<Task> onIdle = null, bool autoComplete = false)
         {
-            _channel = CreateChannel(this.GetConnection());
+            _channel = CreateChannel(GetConnection());
             var receiver = new QueueMessageReceiver(_channel, handler, errorHandler);
             this.ConfigureHandler(_channel, MessageBusOptions, receiver);
             return Task.CompletedTask;
@@ -44,45 +44,32 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
 
         public Task Send(MessageBusMessage message)
         {
-            using (var conn = GetConnection())
-            {
-                using (var channel = this.CreateChannel(conn))
-                {
-                    Send(message, channel);
-                }
-            }
-
+            CreateAndSend(message);
             return Task.CompletedTask;
         }
 
         public Task Send(IEnumerable<MessageBusMessage> messages)
         {
-            using (var conn = GetConnection())
-            {
-                using (var channel = this.CreateChannel(conn))
-                {
-                    foreach (var message in messages)
-                        Send(message, channel);
-                }
-            }
+            foreach (var message in messages)
+                CreateAndSend(message);
 
             return Task.CompletedTask;
         }
 
-        private void Send(MessageBusMessage msg, IModel channel)
+        private void CreateAndSend(MessageBusMessage msg)
         {
-            IBasicProperties basicProps = channel.CreateBasicProperties();
+            IBasicProperties basicProps = _channel.CreateBasicProperties();
 
             if (msg.UserProperties.Any())
                 basicProps.Headers = msg.UserProperties;
 
-            channel.BasicPublish(exchange: "", routingKey: MessageBusOptions.QueueName, basicProperties: basicProps, body: msg.Body);
+            _channel.BasicPublish(exchange: "", routingKey: MessageBusOptions.QueueName, basicProperties: basicProps, body: msg.Body);
         }
 
         public new void Dispose()
         {
             _channel?.Close();
-            base.Close();
+            Close();
         }
 
         public new Task Close()
@@ -93,6 +80,6 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
             return Task.CompletedTask;
         }
 
-        
+
     }
 }

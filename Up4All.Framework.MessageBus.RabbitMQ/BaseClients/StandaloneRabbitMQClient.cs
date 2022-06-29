@@ -29,8 +29,6 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.BaseClients
 
         public IConnection GetConnection()
         {
-            if (_conn != null) return _conn;
-
             var result = Policy
                 .Handle<BrokerUnreachableException>()
                 .WaitAndRetry(_connectionAttempts, retryAttempt =>
@@ -41,13 +39,15 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.BaseClients
                 })
                 .ExecuteAndCapture(() =>
                 {
+                    if (_conn != null && _conn.IsOpen) return;
+
                     _logger.LogDebug($"Trying to connect in RabbitMQ server");
                     _conn = new ConnectionFactory() { Uri = new Uri(_connectionString) }.CreateConnection();
                 });
 
             if (result.Outcome != OutcomeType.Successful)
                 throw result.FinalException;
-
+            
             return _conn;
         }
 

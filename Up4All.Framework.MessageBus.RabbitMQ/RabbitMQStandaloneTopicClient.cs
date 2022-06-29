@@ -24,12 +24,9 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
 
         public Task Send(MessageBusMessage message)
         {
-            using (var conn = GetConnection())
+            using (var channel = CreateChannel(GetConnection()))
             {
-                using (var channel = CreateChannel(conn))
-                {
-                    Send(message, channel);
-                }
+                Send(message, channel);
             }
 
             return Task.CompletedTask;
@@ -37,13 +34,10 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
 
         public Task Send(IEnumerable<MessageBusMessage> messages)
         {
-            using (var conn = GetConnection())
+            using (var channel = CreateChannel(GetConnection()))
             {
-                using (var channel = CreateChannel(conn))
-                {
-                    foreach (var message in messages)
-                        Send(message, channel);
-                }
+                foreach (var message in messages)
+                    Send(message, channel);
             }
 
             return Task.CompletedTask;
