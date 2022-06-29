@@ -7,12 +7,15 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Extensions
 {
     public static class StandaloneRabbitMQClientExtensions
     {
-        public static IModel ConfigureHandler(this StandaloneRabbitMQClient client, string queue, QueueMessageReceiver receiver)
+        public static IModel CreateChannel(this StandaloneRabbitMQClient client)
         {
-            var channel = client.CreateChannel(client.GetConnection());
+            return client.CreateChannel(client.GetConnection());
+        }
+
+        public static void ConfigureHandler(this StandaloneRabbitMQClient client, IModel channel, string queue, QueueMessageReceiver receiver)
+        {            
             channel.BasicQos(0, 1, false);
-            channel.BasicConsume(queue: queue, autoAck: false, consumer: receiver);
-            return channel;
+            channel.BasicConsume(queue: queue, autoAck: false, consumer: receiver);            
         }
     }
 }

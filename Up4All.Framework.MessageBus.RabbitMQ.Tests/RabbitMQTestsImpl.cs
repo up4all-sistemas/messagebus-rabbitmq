@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 using Up4All.Framework.MessageBus.Abstractions.Interfaces;
 using Up4All.Framework.MessageBus.Abstractions.Messages;
@@ -83,15 +84,15 @@ namespace Up4All.Framework.MessageBus.RabbitMQ.Tests
         }
 
         [Fact]
-        public void SubscriveReceiveMessage()
+        public async Task SubscriveReceiveMessage()
         {
             var client = _provider.GetRequiredService<IMessageBusConsumer>();
 
-            client.RegisterHandler((msg) =>
+            await client.RegisterHandlerAsync(async  (msg) =>
             {
                 Assert.True(msg != null);
                 return Abstractions.Enums.MessageReceivedStatusEnum.Completed;
-            }, (ex) => Debug.Print(ex.Message));
+            }, (ex) => { Debug.Print(ex.Message); return Task.CompletedTask; });
 
             Thread.Sleep(3000);
         }

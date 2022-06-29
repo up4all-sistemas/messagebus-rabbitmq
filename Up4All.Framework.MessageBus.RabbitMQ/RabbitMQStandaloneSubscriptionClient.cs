@@ -28,15 +28,17 @@ namespace Up4All.Framework.MessageBus.RabbitMQ
         }
 
         public void RegisterHandler(Func<ReceivedMessage, MessageReceivedStatusEnum> handler, Action<Exception> errorHandler, Action onIdle = null, bool autoComplete = false)
-        {   
+        {
+            _channel = CreateChannel(this.GetConnection());
             var receiver = new QueueMessageReceiver(_channel, handler, errorHandler);
-            _channel = this.ConfigureHandler(_subscriptionName, receiver);
+            this.ConfigureHandler(_channel, _subscriptionName, receiver);
         }
 
         public Task RegisterHandlerAsync(Func<ReceivedMessage, Task<MessageReceivedStatusEnum>> handler, Func<Exception, Task> errorHandler, Func<Task> onIdle = null, bool autoComplete = false)
         {
+            _channel = CreateChannel(this.GetConnection());
             var receiver = new QueueMessageReceiver(_channel, handler, errorHandler);
-            _channel = this.ConfigureHandler(_subscriptionName, receiver);
+            this.ConfigureHandler(_channel, _subscriptionName, receiver);
             return Task.CompletedTask;
         }
 
